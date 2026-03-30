@@ -176,6 +176,11 @@ def config() -> argparse.Namespace:
 
     # logging related
     parser.add_argument("--result_dir", type=str, default="")
+    parser.add_argument(
+        "--skip_captioning",
+        action="store_true",
+        help="Skip loading the captioning model. Tasks requiring VQA eval will be skipped.",
+    )
     args = parser.parse_args()
 
     # check the whether the action space is compatible with the observation space
@@ -276,7 +281,7 @@ def test(
         caption_image_fn = None
 
     # Load a (possibly different) captioning model for running VQA evals.
-    if DATASET == 'visualwebarena':
+    if DATASET == 'visualwebarena' and not args.skip_captioning:
         if (
             caption_image_fn
             and args.eval_captioning_model == args.captioning_model
@@ -340,9 +345,12 @@ def test(
                     comb = get_site_comb_from_filepath(cookie_file_name)
                     temp_dir = tempfile.mkdtemp()
                     # subprocess to renew the cookie
+                    import sys
+                    executable = sys.executable
                     subprocess.run(
                         [
-                            "python",
+                            # "python",
+                            executable,
                             "browser_env/auto_login.py",
                             "--auth_folder",
                             temp_dir,
